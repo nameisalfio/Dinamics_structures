@@ -5,7 +5,7 @@ template<typename T>
 class Queue_static{
 
 	T* vet;
-	int head = -1;
+	int head = 0;
 	int tail = -1;
 
 	int max_size;
@@ -27,9 +27,6 @@ public:
 			return;
 		}
 
-		if(head == -1)
-			head = 0;
-
 		tail = ++tail % max_size;
 		vet[tail] = val;
 		size++;
@@ -37,7 +34,7 @@ public:
 		return;
 	}
 
-	T getLast(){
+	T getFirst(){
 
 		if(isEmpty())
 			throw "Empty queue!";
@@ -63,7 +60,7 @@ public:
 			os << "\nEmpty queue" << endl;
 
 		if(s.isFull())
-			return os << "\nFull queue" << endl;
+			os << "\nFull queue" << endl;
 
 		os << "\nQueue_static: " << endl;
 

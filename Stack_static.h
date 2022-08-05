@@ -38,6 +38,14 @@ public:
 		return;
 	}
 
+	T getLast(){
+
+		if(isEmpty())
+			throw "Empty queue!";
+
+		return vet[top];
+	}
+
 	T pop(){
 
 		if(isEmpty())
