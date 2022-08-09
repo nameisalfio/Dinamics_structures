@@ -33,7 +33,7 @@ public:
 	void setLeft(BSTNode<T>* left){this->left = left;}
 	void setKey(T key){this->key = key;}
 
-	friend ostream& operator<< (ostream& os, BSTNode<T>& b){
+	friend ostream& operator<< (ostream& os, const BSTNode<T>& b){
 
 		if(b.verbose){
 			os << "BSTNode: " << &b << endl;

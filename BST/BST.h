@@ -93,7 +93,7 @@ class BST{
 		BSTNode<T>* max(BSTNode<T>* from){
 
 			if(isEmpty())
-				throw "Void BST!";
+                throw out_of_range("Empty bst...");
 
 			BSTNode<T>* ptr = from;
 			while(ptr->right)
@@ -107,7 +107,7 @@ class BST{
 		BSTNode<T>* min(BSTNode<T>* from){
 
 			if(isEmpty())
-				throw "Void BST!";
+                throw out_of_range("Empty bst...");
 
 			BSTNode<T>* ptr = from;
 			while(ptr->left)
@@ -116,12 +116,21 @@ class BST{
 			return ptr;
 		}
 
+        BSTNode<T>* successor(T key){
+
+            BSTNode<T>* ptr = search(key);
+            if(!ptr || ptr == min())
+                throw out_of_range("...successor doesn't exist...");
+
+            return successor(ptr);
+        }
+
 		BSTNode<T>* successor(BSTNode<T>* x){
 
 			if(isEmpty())
 				return nullptr;
 
-			if(x->right)
+			if(x->right) 
 				return min(x->right);
 
 			BSTNode<T>* y = x->parent;
@@ -133,6 +142,15 @@ class BST{
 
 			return y;
 		}
+
+        BSTNode<T>* predecessor(T key){
+
+            BSTNode<T>* ptr = search(key);
+            if(!ptr || ptr == min())
+                throw out_of_range("...predecessor doesn't exist...");
+
+            return predecessor(ptr);
+        }
 
 		BSTNode<T>* predecessor(BSTNode<T>* x){
 
@@ -152,7 +170,12 @@ class BST{
 			return y;
 		}
 
-		BSTNode<T>* search(T key){return search(root, key);}
+		BSTNode<T>* search(T key){
+			if(isEmpty())
+                throw out_of_range("Empty bst...");
+
+			return search(root, key);
+		}
 
 		BSTNode<T>* search(BSTNode<T>*ptr , T key){
 
@@ -167,6 +190,112 @@ class BST{
 
 			else
 				return search(ptr->right, key);
+		}
+
+		int from_successor(T key){
+
+            int count=0;
+            BSTNode<T> * ptr = search(key);
+
+            if(!ptr || ptr == max()) 
+                throw out_of_range ("...successor doesn't exist...");
+
+            //Caso 1: il nodo ha un sottoalbero dx
+            if(ptr->right) 
+            {
+                ptr = ptr->right;
+                count++; //mi sono comunque spostato di un nodo
+
+                while(ptr->left) //Cerco il minimo del sottoalbero dx
+                {
+                    ptr = ptr->left;
+                    count++;
+                }
+
+                return count;
+            }
+
+            //Caso 2: il nodo è una foglia
+
+            BSTNode<T>* y = ptr->parent; //passo induttivo
+            count++; //mi sono comunque spostato di un nodo
+
+            while(ptr && ptr == y->right) //fino a che ptr non è un figlio sinistro
+            {
+                ptr = ptr->parent;
+                y = y->parent;
+                count ++;
+            }
+
+            return count;
+        }
+
+		int from_root(BSTNode<T>* nodo_h, BSTNode<T>* partenza){
+
+			//partenza = radice del sottoalbero ottenuto mettendo nodo_k come radice
+
+			if(partenza->key == nodo_h->key) //distanza tra un nodo e se stesso
+				return 0;
+
+			BSTNode<T>* tmp = partenza;
+			int counter = 0;  //distanza tra padre e figlio
+
+			while(tmp && tmp->key != nodo_h->key) //esco quando arrivo ad una foglia 
+												//oppure quando trovo il nodo
+			{
+				if(nodo_h->key > tmp->key) 
+					tmp = tmp->right;
+				else 
+					tmp=tmp->left;
+
+				counter++;
+			}
+			
+			if(!tmp) 
+				return -1;
+			else 
+				return counter;  
+			
+		}
+
+		int between_nodes(T k, T h) {
+
+			BSTNode<T>* nodo_k = search(k);
+			BSTNode<T>* nodo_h = search(h);
+
+			int counter=0;
+
+			if(!nodo_k || !nodo_h)
+						throw out_of_range("Chiavi errate!");
+					
+			if(k <= h)
+			{
+				BSTNode<T>* tmp = nodo_k;
+				bool flag = true;
+
+				while(tmp && flag) 
+				{
+					int distance = from_root(nodo_h, tmp); 
+
+					if(distance == 0) //k e h coincidono
+						flag = false;
+					
+					else if(distance == -1)
+					{
+						tmp = tmp->parent;  //salgo 
+						counter++; 
+					}
+					else 
+					{
+						counter += distance;
+						flag = false;
+					}
+				}
+
+				return counter;
+			}
+			else
+				return between_nodes(h, k); //inverto per ottenere k <= h
 		}
 
 		BSTNode<T>* remove(BSTNode<T>* node){ 
@@ -244,32 +373,30 @@ class BST{
 			return toDelete;
 		}
 
-		void cancel_below(BSTNode<T>* ptr, T key){
-				
-			if(ptr->key < key)
-				remove(ptr);
-		}
+        //Below 
+	    void cancel_below(BSTNode<T>* ptr, T key){
+	        if(ptr->key <= key)
+	            remove(ptr->key);
+	    }
 
-		void remove_below(BSTNode<T>* ptr, T key){
+	    void remove_below(BSTNode<T>* ptr, T key){
+	        if(!ptr)
+	            return;
 
-			if(!ptr)
-				return;
+	        remove_below(ptr->right, key);
+	        cancel_below(ptr, key);
+	        remove_below(ptr->left, key);
+	    }
 
-			remove_below(ptr->right, key);
-			cancel_(ptr, key);
-			remove_below(ptr->left, key);
-		}
+	    void remove_below(T key){remove_below(root, key);}
 
-		void remove_below(T key){remove_below(root, key);}
-
+	    //Above
 		void cancel_above(BSTNode<T>* ptr, T key){
-				
-			if(ptr->key > key)
-				remove(ptr);
+			if(ptr->key >= key)
+				remove(ptr->key);
 		}
 
 		void remove_above(BSTNode<T>* ptr, T key){
-
 			if(!ptr)
 				return;
 
@@ -280,10 +407,10 @@ class BST{
 
 		void remove_above(T key){remove_above(root, key);}
 
+		//Equal
 		void cancel_equal(BSTNode<T>* ptr, T key){
-				
 			if(ptr->key == key)
-				remove(ptr);
+				remove(ptr->key);
 		}
 
 		void remove_equal(BSTNode<T>* ptr, T key){
@@ -298,7 +425,7 @@ class BST{
 
 		void remove_equal(T key){remove_equal(root, key);}
 
-		friend ostream& operator<< (ostream& os, BST& bst){
+		friend ostream& operator<< (ostream& os, BST<T>& bst){
 
 			if(bst.isEmpty())
 				return os << "\nEmpty BST!" << endl;
