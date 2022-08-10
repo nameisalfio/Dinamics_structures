@@ -8,7 +8,7 @@ class Graph{
 
 	vertex<T>** vertices;
 	bool** adj;
-	int n_vertex;
+	int n_vertices;
 	int max_vertices;
 	bool isOriented;
 
@@ -23,15 +23,19 @@ class Graph{
 				adj[i] = new bool[max_vertices]{false};
 		}
 
+		bool isEmpty(){return this->n_vertices == 0;}
+
+	 	bool isFull(){return this->n_vertices == this->max_vertices;}
+
 		void add_vertex(T key){
 
-			if(n_vertex == max_vertices)
+			if(n_vertices == max_vertices)
 			{
 				cerr << "Graph is full! " << endl;
 				return;
 			}
 
-			vertices[n_vertex++] = new vertex<T> (key);
+			vertices[n_vertices++] = new vertex<T> (key);
 		}
 
 		void add_edge(T key1, T key2){
@@ -58,38 +62,37 @@ class Graph{
 
 		int search(T key){
 
-			if(n_vertex == 0)
+			if(isEmpty())
 			{
-				cerr << "Graph is empty!" << endl;
+				cerr << "Empty graph..." << endl;
 				return -1;
-			}
+			}	
 
-			for(int i=0; i<n_vertex; i++)
+			for(int i=0; i<n_vertices; i++)
 			{
 				if(vertices[i]->key == key)
 					return i;
 			}
 
 			return -1;
-
 		}
 
 		friend ostream& operator<< (ostream& os, const Graph<T>& g){
 
-			if(g.n_vertex == 0)
+			if(g.isEmpty())
 				return os << "\nGraph is empty!" << endl;
 
 			os << "\nVertices: " << endl;
 
-			for(int i=0; i < g.n_vertex; i++)
+			for(int i=0; i < g.n_vertices; i++)
 				os << "\nv[" << i << "] = " << g.vertices[i]->get_key() << "\t";
 
 			os << endl;
 			os << "\nEdges: " << endl;
 
-			for(int i=0; i < g.n_vertex; i++)
+			for(int i=0; i < g.n_vertices; i++)
 			{
-				for(int j=0; j < g.n_vertex; j++)
+				for(int j=0; j < g.n_vertices; j++)
 				{
 					if(g.adj[i][j])
 						os << "(" << i << ")-----(" << j << ")" << endl;
@@ -104,14 +107,14 @@ class Graph{
 			cout << "\nAdj: \n" << endl;
 
 			cout << "V:" ;
-			for(int i=0; i<n_vertex; i++)
+			for(int i=0; i<n_vertices; i++)
 				cout << "\t" << *vertices[i] << "   ";
 		
 			cout << "\n------------------------------------\n";
 
-			for(int i=0; i<n_vertex; i++)
+			for(int i=0; i<n_vertices; i++)
 			{
-				for(int j=0; j<n_vertex; j++)
+				for(int j=0; j<n_vertices; j++)
 					cout << "\t" << adj[i][j] << "   ";
 
 				cout << endl;

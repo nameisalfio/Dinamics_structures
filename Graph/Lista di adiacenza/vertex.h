@@ -2,6 +2,8 @@
 #define VERTEX_H
 
 #include "Linked_list.h"
+//Specifica la classe lista, infatti ogni vertice è rappresentato da una lista che ha il vertice stesso
+//come head e tutti i vertici a se adiacenti come nodi della lista
 
 template<typename T>
 class vertex : public List<T>{

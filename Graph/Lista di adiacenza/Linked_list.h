@@ -65,7 +65,7 @@ class List{
 			return Node<T> :: count;
 		}
 		
-		bool isEmpty(){
+		bool isEmpty()const{
 			return head == nullptr;
 		}
 		
@@ -281,20 +281,24 @@ class List{
 			delete cur;  //Cancello
 			return;
 		}
-		
-		friend ostream& operator<< (ostream& out, const List<T> &list){
 
-			out << "\nList head : " << list.head << endl;
-			out << "List tail : " << list.tail << endl << endl;
+		friend ostream& operator<< (ostream& os, const List<T>& l){
 
-			Node<T>* ptr = list.head;
-			while(ptr) //ptr != nullptr
+			if(l.isEmpty())
+				return os << "\nEmpty List !" << endl;
+
+			os << "\nHead: " << *l.head << endl;
+			os << "\nLinked_list: " << endl;
+
+			Node<T>* ptr = l.head;
+			os << "\nHead --> ";
+			while(ptr)
 			{
-				out << *ptr << endl;
+				os << *ptr << " --> ";
 				ptr = ptr->getNext();
 			}
-			
-			return out;
+
+			return os << "NIL" << endl << "\nEnd List\n" << endl; 
 		}
 
 		

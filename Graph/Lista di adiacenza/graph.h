@@ -7,19 +7,20 @@ template<typename T>
 class Graph{
 
 	List<vertex<T>> vertices;
-
-	int n_vertex = 0;
+	int n_vertices = 0;
 	bool isOriented;
 
 	public:
 
 		Graph(bool isOriented = true) : isOriented(isOriented){}
 
+		bool isEmpty()const{return this->n_vertices == 0;}
+
 		void add_vertex(T key){
 
 			vertex<T> toinsert (key);
 			vertices.insertTail(toinsert);
-			n_vertex ++;
+			n_vertices ++;
 		}
 
 		void add_edge(T key1, T key2){
@@ -47,7 +48,7 @@ class Graph{
 
 		Node<vertex<T>>* search(T key){
 
-			if(n_vertex == 0)
+			if(isEmpty())
 			{
 				cerr << "Graph is empty!" << endl;
 				return nullptr;
@@ -62,12 +63,13 @@ class Graph{
 				ptr = ptr->getNext();
 			}
 
+			cerr << "There isn't vertex with key " << key << endl;
 			return nullptr;
 		}
 
 		friend ostream& operator<< (ostream& os, const Graph<T>& g){
 
-			if(g.n_vertex == 0)
+			if(g.isEmpty())
 				return os << "\nEmpty Graph" << endl;
 
 			if(!g.isOriented)
@@ -75,7 +77,7 @@ class Graph{
 			else 
 				os << "\nGraph is oriented";
 
-			os << "\tNumber of vertices: " << g.n_vertex << endl;
+			os << "\tNumber of vertices: " << g.n_vertices << endl;
 			return os << g.vertices << endl;
 
 		}
