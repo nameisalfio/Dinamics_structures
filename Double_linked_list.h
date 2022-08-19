@@ -13,7 +13,10 @@ class DLNode{
 
 public:
 
-	DLNode(T val):val(val){next = nullptr;}
+	DLNode(T val):val(val){
+		prev = nullptr;
+		next = nullptr;
+	}
 
 	T getVal(){return this->val;}
 
@@ -34,7 +37,10 @@ protected:
 
 public:
 
-	DLList(){head = nullptr;}
+	DLList(){
+		head = nullptr;
+		tail = nullptr;
+	}
 
 	DLNode<T>* getHead(){return this->head;}
 
@@ -190,11 +196,34 @@ public:
 
 		DLNode<T>* ptr = tail;
 		tail->prev->next = nullptr;
-		tail= ptr->prev;
+		tail = tail->prev;							
 		delete ptr;
 
 		return;
 	}
+
+	DLNode<T>* search(T val){
+
+		if(isEmpty())
+			throw out_of_range("...list is empty...");
+
+		if(head->val == val)
+			return head;
+
+		DLNode<T>* cur = head;
+
+		while(cur->next && cur->val != val)
+			cur = cur->next;
+		
+		if(cur->val != val)
+		{
+			cerr << "Element with key " << val << " not found!" << endl;
+			return nullptr;
+		}
+
+		return cur;
+	}
+
 
 	void removeElement(T val){
 
@@ -203,34 +232,30 @@ public:
 			cerr << "Empty List! Operation isn't avaible! " << endl;
 			return;
 		}
+		
+		DLNode<T>* toremove = search(val);
 
-		if(head->val == val)
-		{
+		if(!toremove)
+			return;
+
+		if(toremove->val == head->val){
 			removeHead();
 			return;
 		}
 
-		if(tail->val == val)
-		{
+		if(toremove->val == tail->val){
 			removeTail();
 			return;
 		}
 
 		DLNode<T>* cur = head;
 
-		while(cur->next && cur->val != val)
+		while(cur->next && cur->val != toremove->val)
 			cur = cur->next;
-
-		if(cur->val != val)
-		{
-			cerr << "Element with key " << val << " isn't in the List! " << endl;
-			return;
-		}
 
 		cur->prev->next = cur->next;
 		cur->next->prev = cur->prev;
 		delete cur;
-		return;
 	}
 
 	friend ostream& operator<< (ostream& os,  DLList<T>& d){

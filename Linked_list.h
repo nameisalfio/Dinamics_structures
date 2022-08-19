@@ -190,6 +190,28 @@ public:
 		return;
 	}
 
+	Node<T>* search(T val){
+
+		if(isEmpty())
+			throw out_of_range("...list is empty...");
+
+		if(head->val == val)
+			return head;
+
+		Node<T>* cur = head;
+
+		while(cur->next && cur->val != val)
+			cur = cur->next;
+		
+		if(cur->val != val)
+		{
+			cerr << "Element with key " << val << " not found!" << endl;
+			return nullptr;
+		}
+
+		return cur;
+	}
+
 	void removeElement(T val){
 
 		if(isEmpty())
@@ -197,9 +219,13 @@ public:
 			cerr << "Empty List! Operation isn't avaible! " << endl;
 			return;
 		}
+		
+		Node<T>* toremove = search(val);
 
-		if(head->val == val)
-		{
+		if(!toremove)
+			return;
+
+		if(toremove->val == head->val){
 			removeHead();
 			return;
 		}
@@ -207,21 +233,13 @@ public:
 		Node<T>* cur = head;
 		Node<T>* prev = nullptr;
 
-		while(cur->next && cur->val != val)
-		{
+		while(cur->next && cur->val != toremove->val){
 			prev = cur;
 			cur = cur->next;
 		}
 
-		if(cur->val != val)
-		{
-			cerr << "Element with key " << val << " isn't in the List! " << endl;
-			return;
-		}
-
 		prev->next = cur->next;
 		delete cur;
-		return;
 	}
 
 	friend ostream& operator<< (ostream& os, List<T>& l){
