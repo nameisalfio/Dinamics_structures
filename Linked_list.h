@@ -283,6 +283,18 @@ public:
 
 		return os << "NIL" << endl << "\nEnd List\n" << endl; 
 	}
+
+	bool nonDecrescente(Node<T>* ptr){
+	    return(!ptr || !ptr->next|| ((ptr->val <= ptr->next->val && nonDecrescente(ptr->next))));
+	}
+
+	bool nonDecrescente(){return nonDecrescente(head);}
+
+	bool nonCrescente(Node<T>* ptr){
+	    return(!ptr || !ptr->next|| ((ptr->val >= ptr->next->val && nonCrescente(ptr->next))));
+	}
+	
+	bool nonCrescente(){return nonCrescente(head);}
 };
 
 #endif
