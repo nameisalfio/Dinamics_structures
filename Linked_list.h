@@ -242,6 +242,29 @@ public:
 		delete cur;
 	}
 
+	void inverti(Node<T>* ptr){
+	    Node<T>* cur = new Node<T>(*ptr);
+	   	Node<T>* prev = nullptr;
+	    Node<T>* succ = nullptr;
+
+	    while(cur){
+	        succ = cur->next;
+	        cur->next = prev;
+	        prev = cur;
+	        cur = succ;
+	    }
+		head = prev;
+	}
+
+	void inverti(){
+		if(isEmpty())
+		{
+			cerr << "Empty List! Operation isn't avaible! " << endl;
+			return;
+		}
+		inverti(this->head);
+	}
+
 	friend ostream& operator<< (ostream& os, List<T>& l){
 
 		if(l.isEmpty())
