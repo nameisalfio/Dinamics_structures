@@ -52,6 +52,18 @@ class BST{
 
 		void visit(BSTNode<T>* ptr) { cout << "\n" << *ptr << endl; }
 
+		/*void visit(BSTNode<T>* ptr) { 
+			if(ptr == root){
+				cout << "\n" << *ptr << "(root)" << endl; 
+				return;
+			}
+			if(ptr == ptr->parent->left)
+				cout << "\n" << *ptr << "(left son from " << *ptr->parent << ")" << endl; 
+
+			else if(ptr == ptr->parent->right)
+				cout << "\n" << *ptr << "(right son from " << *ptr->parent << ")" << endl; 
+		}*/
+
 		void pre_order(BSTNode<T>* ptr){
 
 			if(!ptr)
@@ -119,7 +131,7 @@ class BST{
         BSTNode<T>* successor(T key){
 
             BSTNode<T>* ptr = search(key);
-            if(!ptr || ptr == min())
+            if(!ptr || ptr == max())
                 throw out_of_range("...successor doesn't exist...");
 
             return successor(ptr);
@@ -424,6 +436,18 @@ class BST{
 		}
 
 		void remove_equal(T key){remove_equal(root, key);}
+
+		int depth(BSTNode<T>* ptr){
+			if(isEmpty())
+				throw out_of_range("..empty BST...");
+
+			int deep = 0;
+			while(ptr->parent){
+				deep ++;
+				ptr = ptr->parent;
+			}
+			return deep;
+		}
 
 		friend ostream& operator<< (ostream& os, BST<T>& bst){
 

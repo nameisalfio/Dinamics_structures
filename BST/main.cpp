@@ -16,6 +16,7 @@ int main(){
 		cout << "\nEmpty BST!" << endl;
 	}
 */
+/*
 	bst.insert(10);
 	bst.insert(4);
 	bst.insert(5);
@@ -41,10 +42,19 @@ int main(){
 	cout << "\nDistanza tra 10 e 3 : " << bst.between_nodes(10, 3) << endl;
 
 	cout << bst << endl;
-
+*/
 /*
 	cout << "\nElimino tutti i nodi al di sopra di 5: " << endl;
 	bst.remove_above(5);
 	cout << bst << endl;
 */
+	bst.insert(7);
+	bst.insert(10);
+	bst.insert(8);
+	bst.insert(11);
+	bst.insert(3);
+	bst.insert(2);
+	bst.insert(1);
+
+	cout << bst.depth(bst.search(1)) << endl;
 }
