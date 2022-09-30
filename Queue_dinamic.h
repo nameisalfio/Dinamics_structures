@@ -24,7 +24,7 @@ public:
 
 	DLNode<T>* dequeue(){
 
-		if(isEmpty)
+		if(isEmpty())
 			return nullptr;
 
 		DLNode<T>* ptr = DLList<T>::getHead();
