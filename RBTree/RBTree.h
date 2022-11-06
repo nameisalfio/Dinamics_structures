@@ -1,36 +1,73 @@
 #ifndef RBTREE_H
 #define RBTREE_H
 
-#include "RBNode.h"
+enum color {BLACK, RED};	//BLACK = 0 	RED = 1
 
-template<typename T>
-class RBTree{
-	RBNode<T>* root;
-	bool verbose;
+template<class T>
+class Node{
+
+private:
+	T key;
+	int color;
+	Node<T>* parent;
+	Node<T>* right;
+	Node<T>* left;
+
+	template<class C>
+	friend class RBTree;
 public:
-	RBTree(bool verbose = false) : verbose(verbose){root = nullptr;}
+	Node(T key, int color) : key(key), color(color){parent = left = right = nullptr;}
 
-	RBNode<T>* getRoot(){return this->root;}
+	//Getter
+	Node<T>* getParent(){return parent;}
+	Node<T>* getRight(){return right;}
+	Node<T>* getLeft(){return left;}
+	T getKey(){return key;}
+	int getColor(){return color;}
+
+	//Setter
+	void setParent(Node<T>* parent){this->parent = parent;}
+	void setRight(Node<T>* right){this->right = right;}
+	void setLeft(Node<T>* left){this->left = left;}
+	void setKey(T key){this->key = key;}
+	void setColor(int color){this->color = color;}
+
+	friend ostream& operator<< (ostream& os, const Node<T>& b){
+		return os << b.key << " (" << (b.color == 1 ? "RED" : "BLACK" )<< ")";
+	}
+};
+
+template<class T>
+class RBTree{
+
+private:
+	Node<T>* root;
+
+	double compare(T a, T b){return ((a) - (double)(b));}
+
 	bool isEmpty(){return !root;}
 
-	void swapColors(RBNode<T>* x, RBNode<T>* y){
+	void swapColors(Node<T>* x, Node<T>* y)
+	{
 		int aux = x->getColor();
 		x->setColor(y->getColor());
 		y->setColor(aux);
 	}
-	void swapKeys(RBNode<T>* x, RBNode<T>* y){
+
+	void swapKeys(Node<T>* x, Node<T>* y)
+	{
 		T aux = x->getKey();
 		x->setKey(y->getKey());
 		y->setKey(aux);
 	}
 
-	bool isLeftChild(RBNode<T>* node){
+	bool isLeftChild(Node<T>* node){
 		if(node->parent)
 			return node == node->parent->left;
 		return false;
 	}
 
-	RBNode<T>* getSibling(RBNode<T>* node){		//restituisce il nodo fratello
+	Node<T>* getSibling(Node<T>* node){
 		if(!node->parent)
 			return nullptr;
 
@@ -38,320 +75,155 @@ public:
 			return node->parent->right;
 		return node->parent->left;
 	}
-	RBNode<T>* getUncle(RBNode<T>* node){		//restituisce il nodo zio
+
+	Node<T>* getUncle(Node<T>* node){
 		if(!node->parent || !node->parent->parent)
 			return nullptr;
-		return getSibling(node->parent);
+		return getSibling(node->parent);	// torno il fratello del padre
 	}
 
-	void inOrder(){inOrder(root);}
-	void inOrder(RBNode<T>* ptr){
-		if(!ptr)
-			return;
-		inOrder(ptr->left);
-		visit(ptr);
-		inOrder(ptr->right);
-	}
-	void visit(RBNode<T>* ptr) { 
-		if(verbose)
+	void insertNodeUp(Node<T>* parent, Node<T>* child) // sposta il padre in basso e mette il figlio al suo posto 
+	{
+		if (parent->parent)
 		{
-			if(ptr == root){
-			cout <<  *ptr << "(root)" << endl; 
-			return;
-			}
-			if(isLeftChild(ptr))
-				cout << *ptr << "(left child of " << *ptr->parent << ")" << endl; 
+			if (isLeftChild(parent))	//se parent è figlio sinistro
+				parent->parent->left = child;
 			else
-				cout << *ptr << "(right child of " << *ptr->parent << ")" << endl; 
+				parent->parent->right = child;
 		}
 		else
-		{
-			if(ptr == root){
-				cout << "\n" << *ptr << "(root)" << endl; 
-				return;
-			}
-			cout << "\n" << *ptr << endl;
-		}
+			root = child;
+
+		child->parent = parent->parent;
+		parent->parent = child;
 	}
 
-	void insert(T key)
+	void leftRotate(Node<T>* x)
 	{
-		RBNode<T>* toinsert = new RBNode<T>(key, RED);
-		insert(toinsert);
+		Node<T>* y = x->right; // il nuovo padre sarà l'attuale figlio destro di x			
+		insertNodeUp(x, y);		// sposto y sopra x
+
+		x->right = y->left;// trapianta il sottoalbero sinistro di y nel sottoalbero destro di x		
+		if (y->left) 
+			y->left->parent = x;
+
+		y->left = x; // y diventa il nuovo padre di x
 	}
-	void insert(RBNode<T>* toinsert)
+
+	void rightRotate(Node<T>* x)
 	{
-		if(isEmpty())
-		{
-			T key = toinsert->key;
-			root = new RBNode<T>(key, BLACK);
-			return ;
-		}
+		Node<T>* y = x->left; // il nuovo padre sarà l'attuale figlio sinistro di x			
+		insertNodeUp(x, y);		// sposto y sopra x
 
-		RBNode<T>* ptr = root; 
-		while(true)
-		{
-			if(toinsert->key <= ptr->key)
-			{
-				if(!ptr->left) 
-					break;
-				ptr = ptr->left;
-			}
-			else
-			{
-				if(!ptr->right) 
-					break;
-				ptr = ptr->right;
-			}
-		}
-		toinsert->parent = ptr;
+		x->left = y->right;// trapianta il sottoalbero destro di y nel sottoalbero sinistro di x		
+		if (y->right) 
+			y->right->parent = x;
 
-		if(toinsert->key < ptr->key) 
-			ptr->left=toinsert;
-		else 
-			ptr->right=toinsert;
-
-		insertFixUp(toinsert);
-		root->color = BLACK;
+		y->right = x; // y diventa il nuovo padre di x
 	}
 
-	void insertUp(RBNode<T>* node, RBNode<T>* parent){	//node = x	parent = y
-		if(node->parent)	//se esiste p (genitore di x)
-		{
-			if(isLeftChild(node))
-				node->parent->left = parent;	//se x è figlio sx di p, y diventa il nuovo figlio sx di p
-
-			else
-				node->parent->right = parent;	//se x è figlio dx di p, y diventa il nuovo figlio dx di p
-		}else
-			root = parent;	//y diventa la nuova radice
-		
-		parent->parent = node->parent;		//il genitore di y diventa p
-		node->parent = parent;		//il genitore di x diventa y
-	}
-	void leftRotate(RBNode<T>* node){
-		RBNode<T>* parent = node->right;
-		insertUp(node, parent);	//sposta il nodo "parent" sopra il nodo "node"
-		node->right = node->left;
-		if(parent->left)
-			parent->left->parent = node;
-		parent->left = node;
-	}
-	void rightRotate(RBNode<T>* node){
-		RBNode<T>* parent = node->left;
-		insertUp(node, parent);	//sposta il nodo "parent" sopra il nodo "node"
-		node->left = node->right;
-		if(parent->right)
-			parent->right->parent = node;
-		parent->right = node;
-	}
-	void insertFixUp(RBNode<T>* node){	//node = x
-		//Caso 0: x è la radice dell'albero
-		if(node == root)
+	void insertFixUp(Node<T>* node)
+	{
+		if(node == root)	// Caso 0
 		{
 			node->color = BLACK;
 			return;
 		}
-		//se x non è radice devo verificare che non abbia un genitore rosso
-		RBNode<T>* parent = node->parent;
-		RBNode<T>* granpa = parent->parent;
-		RBNode<T>* uncle = getUncle(node);
 
-		//1)Controlla se parent è rosso
-		if(parent->color == RED)
+		//Parenti stretti di node
+		Node<T>* padre = node->parent;
+		Node<T>* nonno = padre->parent;
+		Node<T>* zio = getUncle(node);
+		if (padre->color == RED)
 		{
-			//Caso 1: controllo il colore dello zio di x
-			if(uncle && uncle->color == RED) 
+			if (zio && zio->color == RED) // Caso 1
 			{
-				granpa->color = RED;	//il nonno diventa rosso
-				parent->color = BLACK;	 //i figli del nonno diventano neri
-				uncle->color = BLACK;	
-				insertFixUp(granpa);	//controllo se il nonno è radice ricorsivamente
+				padre->color = BLACK;
+				zio->color = BLACK;
+				nonno->color = RED;
+				insertFixUp(nonno);
 			}
-			else	//Caso 2: controllo se il genitore è un figlio sx o dx
+			else // Caso 2 (rotazioni)
 			{
-				if(isLeftChild(parent))	  //il genitore di x è un figlio sx
+				if (isLeftChild(padre))
 				{
-					if(isLeftChild(node))	//Caso 2a:  x è figlio sx
+					if (isLeftChild(node))	   // Caso 2.1 (scambio i colori)
+						swapColors(padre, nonno);
+
+					else  // Caso 2.2
 					{
-						swapColors(parent, granpa);
+						leftRotate(padre);	// ruoto a sinistra per ricondurmi al caso 2.1
+						swapColors(node, nonno);
 					}
-					else		//Caso 2b:  x è figlio dx
-					{					
-						leftRotate(parent);	  //faccio risalire x
-						swapColors(node, granpa);
-					}
-					rightRotate(granpa);	//ricado in uno dei due casi precenti(2a o 2b)
+					rightRotate(nonno);	// effettuo comunque una rotazione a destra del nonno
 				}
-				else //il genitore di x è un figlio dx
+				else	// Caso simmetrico al 2
 				{
-					if(isLeftChild(node))
+					if (isLeftChild(node))	// faccio quello che avrei fatto se node fosse figlio destro nel caso precedente
 					{
-						rightRotate(parent);	  //faccio risalire x
-						swapColors(node, granpa);
+						rightRotate(padre);
+						swapColors(node, nonno);
 					}
-					else	//x è figlio dx
-					{
-						swapColors(parent, granpa);
-					}
-					leftRotate(granpa);		//ricado in uno dei due casi precenti
+					else
+						swapColors(padre, nonno);
+					leftRotate(nonno);	// stavolta ruoto a sinistra
 				}
 			}
 		}
-		//se il genitore di x è nero usciamo
-
 	}
 
-	RBNode<T>* max(){return max(root);}
-	RBNode<T>* max(RBNode<T>* from){
-		if(isEmpty())
-            throw out_of_range("Empty red-black tree...");
+public:
+	RBTree<T>(){root=nullptr;}
 
-		RBNode<T>* ptr = from;
-		while(ptr->right)
-			ptr = ptr->right;
-		return ptr;
-	}
+	Node<T>* getRoot(){return root;}
 
-	RBNode<T>* min(){return min(root);}
-	RBNode<T>* min(RBNode<T>* from){
-		if(isEmpty())
-            throw out_of_range("Empty red-black tree...");
+	void setRoot(Node<T>* root){this->root = root;}
 
-		RBNode<T>* ptr = from;
-		while(ptr->left)
-			ptr = ptr->left;
-		return ptr;
-	}
-
-    RBNode<T>* successor(T key){
-        RBNode<T>* ptr = search(key);
-        if(!ptr || ptr == min())
-            throw out_of_range("...successor doesn't exist...");
-        return successor(ptr);
-    }
-	RBNode<T>* successor(RBNode<T>* x){
-		if(isEmpty())
-			return nullptr;
-
-		if(x->right) 
-			return min(x->right);
-
-		RBNode<T>* y = x->parent;
-		while(x && !(isLeftChild(x)))  //fino a che x non è un figlio sinistro
+	Node<T>* searchKey(T key) //search for a key, return the node if exists otherwise return the last node in th path
+	{
+		Node<T>* tmp = root;
+		while (tmp && compare(key,tmp->key) != 0)
 		{
-			x = y;
-			y = y->parent;
+			if (compare(key, tmp->key)<0)
+			{
+				if (tmp->left)
+					tmp = tmp->left;
+				else 
+					break;
+			}
+			else
+			{
+				if (tmp->right)
+					tmp = tmp->right;
+				else
+					break;
+			}
 		}
-		return y;
+		return tmp;
 	}
 
-    RBNode<T>* predecessor(T key){
-        RBNode<T>* ptr = search(key);
-        if(!ptr || ptr == min())
-            throw out_of_range("...predecessor doesn't exist...");
-        return predecessor(ptr);
-    }
-	RBNode<T>* predecessor(RBNode<T>* x){
+	void insertKey(T key) // insert the given key 
+	{
+		Node<T>* toInsert = new Node<T>(key, RED);
 		if(isEmpty())
-			return nullptr;
-
-		if(x->left)
-			return max(x->left);
-
-		RBNode<T>* y = x->parent;
-		while(x && ifLeftChild(x))  //fino a che x non è un figlio destro
-		{
-			x = y;
-			y = y->parent;
-		}
-		return y;
-	}
-
-	RBNode<T>* search(T key){
-		if(isEmpty())
-            throw out_of_range("Empty red-black tree...");
-
-		return search(root, key);
-	}
-	RBNode<T>* search(RBNode<T>*ptr , T key){
-		if(!ptr)
-			return nullptr;
-
-		if(ptr->key == key)
-			return ptr;
-
-		if(key <= ptr->key)
-			return search(ptr->left, key);
-
+			root = toInsert;
 		else
-			return search(ptr->right, key);
-	}
-
-	RBNode<T>* remove(RBNode<T>* node){ 
-
-		//Caso 1: node è una foglia
-		if(!node->left && !node->right)
 		{
-			if(isLeftChild(node))
-				node->parent->left = nullptr;
-			else
-				node->parent->right = nullptr;
-			return node;
-		}
+			Node<T>* tmp = searchKey(key); //search the key
+			if (tmp && compare(key, tmp->key) != 0) //value not found
+			{
+				toInsert->parent = tmp;
 
-		//Caso 2: node ha un solo figlio
-		if(!node->right && node->left)
-		{
-			node->left->setParent(node->parent);
+				if (compare(key, tmp->key) < 0)
+					tmp->left = toInsert;
 
-			if(isLeftChild(node))
-				node->parent->left = node->left;
-			else
-				node->parent->right = node->left;
-			return node;
-		}
-
-		if(!node->left && node->right)
-		{
-			node->right->setParent(node->parent);
-
-			if(isLeftChild(node))
-				node->parent->left = node->right;
+				else
+					tmp->right = toInsert;
+			}
 			else 
-				node->parent->right = node->right;
-			return node;
-		}
-		return nullptr;
-	}
-	RBNode<T>* remove(T key){
-		if(isEmpty()) //albero vuoto
-			return nullptr;
-
-		RBNode<T>* node = search(key);
-
-		if(!node)  //nodo non trovato
-			return nullptr;
-
-		RBNode<T>* toDelete = remove(node);
-
-		//se non sono nel terzo caso mi ritorno il valore del nodo, che ho comunque cancellato con "remove(node)"
-
-		if(toDelete != nullptr) 
-			return toDelete;
-
-		//Caso 3 -> Voglio eliminare un nodo con due figli
-
-		//Sostituisco il nodo da cancellare con il successore
-		RBNode<T>* next = successor(node);
-
-		//Sostituisco la chiave
-		T swap = node->key;
-		node->key = next->key;
-		next->key = swap;
-
-		toDelete = remove(next); //stavolta sono sicuramente in uno dei due casi precedenti
-		return toDelete;
+				return;
+		} 
+		insertFixUp(toInsert); // fix red red violaton if exists 
 	}
 };
 
