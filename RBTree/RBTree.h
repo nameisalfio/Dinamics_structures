@@ -33,7 +33,7 @@ public:
 	void setColor(int color){this->color = color;}
 
 	friend ostream& operator<< (ostream& os, const Node<T>& b){
-		return os << b.key << " (" << (b.color == 1 ? "RED" : "BLACK" )<< ")";
+		return os << " (" <<  b.key << "," << (b.color == 1 ? "RED" : "BLACK" ) << ")";
 	}
 };
 
@@ -98,6 +98,26 @@ private:
 		parent->parent = child;
 	}
 
+	void printLevelOrder(Node<T>* x) // level order visit
+	{
+		queue<Node<T>*> q;
+		q.push(x);
+		while (!q.empty())
+		{
+			Node<T>* curr = q.front();
+			q.pop();
+			if (!curr)
+				cout << "(NIL) ";
+			else
+			{
+				cout << *curr;
+				q.push(curr->left);
+				q.push(curr->right);
+			}
+
+		}
+	}
+
 	void leftRotate(Node<T>* x)
 	{
 		Node<T>* y = x->right; // il nuovo padre sarà l'attuale figlio destro di x			
@@ -143,28 +163,28 @@ private:
 				nonno->color = RED;
 				insertFixUp(nonno);
 			}
-			else // Caso 2 (rotazioni)
+			else // Caso 2 : lo zio è nero (rotazioni) 
 			{
 				if (isLeftChild(padre))
 				{
-					if (isLeftChild(node))	   // Caso 2.1 (scambio i colori)
-						swapColors(padre, nonno);
+					if (isLeftChild(node))	   // Caso 2.1.a : node è esterno quindi i nodi rossi sono entrambi figli sinistri
+						swapColors(padre, nonno);	// scambio i colori
 
-					else  // Caso 2.2
+					else  // Caso 2.2.a	: node è interno
 					{
 						leftRotate(padre);	// ruoto a sinistra per ricondurmi al caso 2.1
 						swapColors(node, nonno);
 					}
 					rightRotate(nonno);	// effettuo comunque una rotazione a destra del nonno
 				}
-				else	// Caso simmetrico al 2
+				else	// Caso simmetrico al 2.a
 				{
-					if (isLeftChild(node))	// faccio quello che avrei fatto se node fosse figlio destro nel caso precedente
+					if (isLeftChild(node))	// 2.2.b faccio quello che avrei fatto se node fosse figlio destro nel caso precedente
 					{
 						rightRotate(padre);
 						swapColors(node, nonno);
 					}
-					else
+					else	// 2.2.a : i nodi rossi sono entrambi figli destri 
 						swapColors(padre, nonno);
 					leftRotate(nonno);	// stavolta ruoto a sinistra
 				}
@@ -179,7 +199,7 @@ public:
 
 	void setRoot(Node<T>* root){this->root = root;}
 
-	Node<T>* searchKey(T key) //search for a key, return the node if exists otherwise return the last node in th path
+	Node<T>* searchKey(T key) //mi ritorna la chiave cercata se è presente, altrimenti mi restituisce l'ultimo nodo nel percorso
 	{
 		Node<T>* tmp = root;
 		while (tmp && compare(key,tmp->key) != 0)
@@ -209,8 +229,8 @@ public:
 			root = toInsert;
 		else
 		{
-			Node<T>* tmp = searchKey(key); //search the key
-			if (tmp && compare(key, tmp->key) != 0) //value not found
+			Node<T>* tmp = searchKey(key);	// il nodo che sarebbe padre del nodo da inserire
+			if (compare(key, tmp->key) != 0) //chiave non presente nell'albero
 			{
 				toInsert->parent = tmp;
 
@@ -220,11 +240,34 @@ public:
 				else
 					tmp->right = toInsert;
 			}
-			else 
+			else	// chiave già presente nell'albero
 				return;
 		} 
-		insertFixUp(toInsert); // fix red red violaton if exists 
+		insertFixUp(toInsert); // ripristina le violazioni se ve ne sono
 	}
+
+	void printLevelOrder() 
+	{
+		cout << "Level order: " << endl;
+		if (isEmpty())
+			cout << "NIL" << endl;
+		else
+			printLevelOrder(root);
+		cout << endl;
+	}
+
+	void visit(Node<T>* ptr) { cout << "\n" << *ptr << endl; }
+
+	void inOrder(Node<T>* ptr){
+		if(!ptr)
+			return;
+
+		inOrder(ptr->left);
+		visit(ptr);
+		inOrder(ptr->right);
+	}
+
+	void inOrder(){inOrder(root);}
 };
 
 #endif
