@@ -256,9 +256,17 @@ public:
 		cout << endl;
 	}
 
-	void visit(Node<T>* ptr) { cout << "\n" << *ptr << endl; }
+	void visit(Node<T>* ptr) 
+	{ 
+		if(ptr != root)
+			cout << "\n" << *ptr << endl; 
+		else
+			cout << "\n" << *ptr << "(ROOT)" << endl; 
 
-	void inOrder(Node<T>* ptr){
+	}
+
+	void inOrder(Node<T>* ptr)
+	{
 		if(!ptr)
 			return;
 
@@ -268,6 +276,30 @@ public:
 	}
 
 	void inOrder(){inOrder(root);}
+
+	void preOrder(Node<T>* ptr)
+	{
+		if(!ptr)
+			return;
+
+		visit(ptr);
+		preOrder(ptr->left);
+		preOrder(ptr->right);
+	}
+
+	void preOrder(){preOrder(root);}
+
+	void postOrder(Node<T>* ptr)
+	{
+		if(!ptr)
+			return;
+
+		postOrder(ptr->left);
+		postOrder(ptr->right);
+		visit(ptr);
+	}
+
+	void postOrder(){postOrder(root);}
 };
 
 #endif
